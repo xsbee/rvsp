@@ -26,9 +26,8 @@ fn main() {
 
     let mut planner = RealFftPlanner::new();
     let fft = planner.plan_fft_forward(args.fftsize);
-    let fftbuf = fft.make_output_vec();
-    let fftlen = fftbuf.len();
-    let fftbuf = Mutex::new(fftbuf);
+    let fftbuf = Mutex::new(fft.make_output_vec());
+    let fftlen = args.fftsize / 2 + 1;
 
     let device = sdl_audio.open_capture(
         None, 

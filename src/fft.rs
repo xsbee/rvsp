@@ -12,6 +12,8 @@ pub struct FftCompute<'a> {
     buf: &'a Mutex<Vec<Complex<f32>>>,
     // sliding window for incoming samples
     sliding: Vec<f32>,
+    // windowed snapshot of the sliding window
+    window: Vec<f32>,
     // buffer for RustFFT to work with
     scratch: Vec<Complex<f32>>,
     // von-Hann window coefficients
@@ -21,10 +23,10 @@ pub struct FftCompute<'a> {
 // https://en.wikipedia.org/wiki/Hann_function
 fn hann_window(w: &mut [f32]) {
     #![allow(non_snake_case)]
-    let N_ = w.len();
+    let N = w.len();
 
-    for n in 0..N_ {
-        w[n] = (n as f32 / N_ as f32 * PI).sin();
+    for n in 0..N {
+        w[n] = (n as f32 / N as f32 * PI).sin();
     }
 }
 
@@ -42,6 +44,7 @@ impl<'a> FftCompute<'a> {
             buf,
             scratch: fft.make_scratch_vec(),
             sliding: fft.make_input_vec(),
+            window: fft.make_input_vec(),
             fft,
             hann
         }
@@ -56,12 +59,12 @@ impl<'a> AudioCallback for FftCompute<'a> {
             self.sliding.drain(0..samples.len());
             self.sliding.extend(samples.iter());
 
-            for (i, s) in self.sliding.iter_mut().enumerate() {
-                *s = self.hann[i] * (*s);
+            for (i, s) in self.sliding.iter().enumerate() {
+                self.window[i] = self.hann[i] * (*s);
             }
 
             self.fft.process_with_scratch(
-                &mut self.sliding, 
+                &mut self.window, 
                 &mut buf, 
                 &mut self.scratch).unwrap();
         }
