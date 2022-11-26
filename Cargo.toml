@@ -9,3 +9,4 @@ edition = "2021"
 realfft = "3.1.0"
 sdl2 = "0.35.2"
 const_format = "0.2.30"
+clap = { version = "4.0.27", features = ["derive"] }

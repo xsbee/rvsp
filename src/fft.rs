@@ -52,7 +52,7 @@ impl<'a> AudioCallback for FftCompute<'a> {
     type Channel = f32;
 
     fn callback(&mut self, samples: &mut [Self::Channel]) {
-        if let Ok(mut buf) = self.buf.try_lock() {
+        if let Ok(mut buf) = self.buf.lock() {
             self.sliding.drain(0..samples.len());
             self.sliding.extend(samples.iter());
 
