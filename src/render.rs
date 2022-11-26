@@ -3,7 +3,7 @@ use std::ops::{Mul, Sub, Div};
 use realfft::num_complex::{Complex, ComplexFloat};
 
 use sdl2::render::Canvas;
-use sdl2::sys::{SDL_FRect, SDL_RenderDrawRectsF};
+use sdl2::sys::{SDL_FRect, SDL_RenderFillRectsF};
 use sdl2::pixels::Color;
 use sdl2::video::Window;
 
@@ -74,7 +74,7 @@ impl Renderer {
 
         self.canvas.set_draw_color(self.fgcolor);
         unsafe {
-            SDL_RenderDrawRectsF(self.canvas.raw(), self.rects.as_ptr(), self.rects.len() as i32);
+            SDL_RenderFillRectsF(self.canvas.raw(), self.rects.as_ptr(), self.rects.len() as i32);
         }
         self.canvas.present();
     }
