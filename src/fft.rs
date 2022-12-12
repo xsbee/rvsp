@@ -1,5 +1,5 @@
 use std::sync::{Arc, Mutex};
-use std::f32::consts::PI;
+use std::f32::consts::{TAU};
 
 use realfft::RealToComplex;
 use realfft::num_complex::Complex;
@@ -16,17 +16,22 @@ pub struct FftCompute<'a> {
     window: Vec<f32>,
     // buffer for RustFFT to work with
     scratch: Vec<Complex<f32>>,
-    // von-Hann window coefficients
-    hann: Vec<f32>
+    // blackman window coefficients
+    blackman: Vec<f32>,
 }
 
-// https://en.wikipedia.org/wiki/Hann_function
-fn hann_window(w: &mut [f32]) {
-    #![allow(non_snake_case)]
-    let N = w.len();
+/// https://webaudio.github.io/web-audio-api/#blackman-window
+fn blackman_window(w: &mut [f32]) {
+    let n = w.len();
 
-    for n in 0..N {
-        w[n] = (n as f32 / N as f32 * PI).sin();
+    const A0: f32 = 0.42f32;
+    const A1: f32 = 0.5f32;
+    const A2: f32 = 0.08f32;
+
+    for i in 0..n {
+        let x = i as f32 / n as f32 * TAU;
+
+        w[i] = A0 - A1 * x.cos() + A2 * (2.0f32 * x).cos();
     }
 }
 
@@ -36,9 +41,9 @@ impl<'a> FftCompute<'a> {
         buf: &'a Mutex<Vec<Complex<f32>>>, 
         len: usize
     ) -> Self {
-        let mut hann = vec![0f32; len];
+        let mut blackman = vec![0f32; len];
 
-        hann_window(&mut hann);
+        blackman_window(&mut blackman);
 
         Self {
             buf,
@@ -46,7 +51,7 @@ impl<'a> FftCompute<'a> {
             sliding: fft.make_input_vec(),
             window: fft.make_input_vec(),
             fft,
-            hann
+            blackman
         }
     }
 }
@@ -60,7 +65,7 @@ impl<'a> AudioCallback for FftCompute<'a> {
             self.sliding.extend(samples.iter());
 
             for (i, s) in self.sliding.iter().enumerate() {
-                self.window[i] = self.hann[i] * (*s);
+            self.window[i] = self.blackman[i] * (*s);
             }
 
             self.fft.process_with_scratch(
