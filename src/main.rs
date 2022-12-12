@@ -1,5 +1,3 @@
-use std::sync::Mutex;
-
 use clap::Parser;
 use sdl2::audio::AudioSpecDesired;
 use sdl2::event::Event;
@@ -12,6 +10,7 @@ use const_format::formatcp;
 mod fft;
 mod render;
 mod cli;
+mod utils;
 
 const WINDOW_TITLE: &'static str = formatcp!(
     "{} (v{})", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
@@ -26,7 +25,6 @@ fn main() {
 
     let mut planner = RealFftPlanner::new();
     let fft = planner.plan_fft_forward(args.fftsize);
-    let fftbuf = Mutex::new(fft.make_output_vec());
     let fftlen = args.fftsize / 2 + 1;
 
     let device = sdl_audio.open_capture(
@@ -34,26 +32,38 @@ fn main() {
         &AudioSpecDesired {
             channels: Some(1), 
             freq: None,
-            samples: None
+            // FIXME: somehow control it control FPS
+            samples: Some(512)
         }, 
-        |_| fft::FftCompute::new(fft, &fftbuf, args.fftsize)).unwrap();
+        |_| {
+            let window = sdl_video.window(WINDOW_TITLE, args.width, args.height)
+                .position_centered()
+                .build()
+                .unwrap();
 
-    let window = sdl_video.window(WINDOW_TITLE, args.width, args.height)
-        .position_centered()
-        .build()
-        .unwrap();
-    
-    let canvas = window
-        .into_canvas()
-        .present_vsync()
-        .accelerated()
-        .build()
-        .unwrap();
+            let (width, height) = window.size();
+            let canvas = window
+                .into_canvas()
+                .present_vsync()
+                .accelerated()
+                .build()
+                .unwrap();
+
+            let renderer = render::Renderer::new(
+                canvas,
+                fftlen, 
+                args.stc, 
+                args.dbmin, 
+                args.dbmax,
+                width,
+                height,
+                args.fgcolor,
+                args.bgcolor);
+
+            fft::FftCompute::new(fft, args.fftsize, renderer)
+        }).unwrap();    
 
     device.resume();
-
-    let mut renderer = render::Renderer::new(
-        canvas, fftlen, args.stc, args.dbmin, args.dbmax, args.fgcolor, args.bgcolor);
 
     'running: loop {
         for event in sdl_events.poll_iter() {
@@ -62,10 +72,6 @@ fn main() {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'running,
                 _ => {}
             }
-        }
-
-        if let Ok(fftbuf) = fftbuf.try_lock() {
-            renderer.render(&*fftbuf);
         }
     }
 }
