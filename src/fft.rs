@@ -61,8 +61,13 @@ impl<'a> AudioCallback for FftCompute<'a> {
 
     fn callback(&mut self, samples: &mut [Self::Channel]) {
         if let Ok(mut buf) = self.buf.lock() {
-            self.sliding.drain(0..samples.len());
-            self.sliding.extend(samples.iter());
+	    if samples.len() > self.sliding.len() {
+		self.sliding.clear();
+		self.sliding.extend(samples.iter().nth(samples.len() - self.sliding.len()));
+	    } else {
+		self.sliding.drain(0..samples.len());
+		self.sliding.extend(samples.iter());
+	    }
 
             for (i, s) in self.sliding.iter().enumerate() {
             self.window[i] = self.blackman[i] * (*s);
