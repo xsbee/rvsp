@@ -12,6 +12,7 @@ use const_format::formatcp;
 mod fft;
 mod render;
 mod cli;
+mod utils;
 
 const WINDOW_TITLE: &'static str = formatcp!(
     "{} (v{})", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
@@ -53,7 +54,7 @@ fn main() {
     device.resume();
 
     let mut renderer = render::Renderer::new(
-        canvas, fftlen, args.stc, args.dbmin, args.dbmax, args.fgcolor, args.bgcolor);
+        canvas, fftlen, args.stc, args.dbmin, args.dbmax, args.width, args.height, args.fgcolor, args.bgcolor);
 
     'running: loop {
         for event in sdl_events.poll_iter() {
