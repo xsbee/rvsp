@@ -42,11 +42,11 @@ pub struct Args {
     pub dbmax: f32,
 
     /// Color of frequency bin bars (in ARGB format)
-    #[arg(long, default_value = "2A2F33FF", value_parser = utils::str_to_color)]
+    #[arg(long, default_value = "FFBBB6A5", value_parser = utils::str_to_color)]
     pub fgcolor: Color,
 
     /// Color of background (in ARGB format)
-    #[arg(long, default_value = "BBB6A5FF", value_parser = utils::str_to_color)]
+    #[arg(long, default_value = "FF2A2F33", value_parser = utils::str_to_color)]
     pub bgcolor: Color,
 
     #[arg(short, long)]
