@@ -23,8 +23,11 @@ pub struct Args {
     pub height: u32,
 
     /// Samplerate of audio
-    #[arg(short = 'r', long, default_value_t = 48000)]
+    #[arg(long, default_value_t = 48000)]
     pub samplerate: u32,
+
+    #[arg(long, default_value_t = 20000)]
+    pub max_frequency: u32,
 
     /// Smoothing time constant (0..1)
     #[arg(long, default_value_t = 0.8)]

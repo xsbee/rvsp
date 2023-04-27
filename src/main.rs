@@ -89,6 +89,8 @@ fn main() {
                     args.dbmax,
                     width,
                     height,
+                    args.max_frequency as f32,
+                    args.samplerate as f32 / args.fftsize as f32,
                     args.fgcolor,
                     args.bgcolor,
                 );
