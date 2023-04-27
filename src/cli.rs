@@ -26,7 +26,7 @@ pub struct Args {
     #[arg(long, default_value_t = 48000)]
     pub samplerate: u32,
 
-    #[arg(long, default_value_t = 20000)]
+    #[arg(long, default_value_t = 16000)]
     pub max_frequency: u32,
 
     /// Smoothing time constant (0..1)
@@ -38,15 +38,15 @@ pub struct Args {
     pub dbmin: f32,
 
     /// Maximum decibels (-Infty...0)
-    #[arg(long, default_value_t = -20.0)]
+    #[arg(long, default_value_t = -6.0)]
     pub dbmax: f32,
 
     /// Color of frequency bin bars (in ARGB format)
-    #[arg(long, default_value = "ffffffff", value_parser = utils::str_to_color)]
+    #[arg(long, default_value = "2A2F33FF", value_parser = utils::str_to_color)]
     pub fgcolor: Color,
 
     /// Color of background (in ARGB format)
-    #[arg(long, default_value = "ff000000", value_parser = utils::str_to_color)]
+    #[arg(long, default_value = "BBB6A5FF", value_parser = utils::str_to_color)]
     pub bgcolor: Color,
 
     #[arg(short, long)]
